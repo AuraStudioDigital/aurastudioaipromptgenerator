@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Wand2 } from "lucide-react";
+import { Wand2, Sparkles, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import ImageUpload from "@/components/ImageUpload";
 import StyleSelector, { type PromptStyle } from "@/components/StyleSelector";
 import PromptOutput from "@/components/PromptOutput";
+import PromptHistory from "@/components/PromptHistory";
+import { usePromptHistory } from "@/hooks/usePromptHistory";
 
 const Index = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -15,6 +17,9 @@ const Index = () => {
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
+  const [activeTab, setActiveTab] = useState<"generate" | "history">("generate");
+
+  const { items: historyItems, addItem, deleteItem, clearAll } = usePromptHistory();
 
   const handleImageSelect = (file: File, preview: string) => {
     setImageFile(file);
@@ -50,6 +55,7 @@ const Index = () => {
       }
 
       setPrompt(data.prompt);
+      addItem(imagePreview, data.prompt, style);
       toast.success(
         mode === "ad"
           ? "Versão para anúncio gerada!"
@@ -71,47 +77,74 @@ const Index = () => {
       <div className="max-w-3xl mx-auto px-4 pb-16">
         <Header />
 
-        <div className="space-y-8">
-          {/* Upload */}
-          <section className="space-y-3">
-            <label className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-              Imagem de Referência
-            </label>
-            <ImageUpload
-              onImageSelect={handleImageSelect}
-              preview={imagePreview}
-              onClear={handleClear}
-            />
-          </section>
-
-          {/* Style */}
-          <section className="space-y-3">
-            <label className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-              Estilo do Prompt
-            </label>
-            <StyleSelector selected={style} onChange={setStyle} />
-          </section>
-
-          {/* Generate */}
-          <Button
-            onClick={() => generatePrompt("generate")}
-            disabled={!imagePreview || isLoading}
-            size="lg"
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 glow-primary font-semibold text-base py-6"
+        {/* Tabs */}
+        <div className="flex gap-1 p-1 rounded-xl bg-muted mb-8">
+          <button
+            onClick={() => setActiveTab("generate")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              activeTab === "generate"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
-            <Wand2 className="w-5 h-5 mr-2" />
+            <Sparkles className="w-4 h-4" />
             Gerar Prompt
-          </Button>
-
-          {/* Output */}
-          <PromptOutput
-            prompt={prompt}
-            isLoading={isLoading}
-            isRefining={isRefining}
-            onRefine={() => generatePrompt("refine")}
-            onAdVersion={() => generatePrompt("ad")}
-          />
+          </button>
+          <button
+            onClick={() => setActiveTab("history")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              activeTab === "history"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <History className="w-4 h-4" />
+            Histórico
+            {historyItems.length > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-bold">
+                {historyItems.length}
+              </span>
+            )}
+          </button>
         </div>
+
+        {activeTab === "generate" ? (
+          <div className="space-y-8">
+            <section className="space-y-3">
+              <label className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                Imagem de Referência
+              </label>
+              <ImageUpload onImageSelect={handleImageSelect} preview={imagePreview} onClear={handleClear} />
+            </section>
+
+            <section className="space-y-3">
+              <label className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                Estilo do Prompt
+              </label>
+              <StyleSelector selected={style} onChange={setStyle} />
+            </section>
+
+            <Button
+              onClick={() => generatePrompt("generate")}
+              disabled={!imagePreview || isLoading}
+              size="lg"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 glow-primary font-semibold text-base py-6"
+            >
+              <Wand2 className="w-5 h-5 mr-2" />
+              Gerar Prompt
+            </Button>
+
+            <PromptOutput
+              prompt={prompt}
+              isLoading={isLoading}
+              isRefining={isRefining}
+              onRefine={() => generatePrompt("refine")}
+              onAdVersion={() => generatePrompt("ad")}
+            />
+          </div>
+        ) : (
+          <PromptHistory items={historyItems} onDelete={deleteItem} onClearAll={clearAll} />
+        )}
       </div>
     </div>
   );
