@@ -58,6 +58,8 @@ const Index = () => {
 
       setPrompt(data.prompt);
       addItem(imagePreview, data.prompt, style);
+      setImageFile(null);
+      setImagePreview(null);
       toast.success(
         mode === "ad"
           ? "Versão para anúncio gerada!"
