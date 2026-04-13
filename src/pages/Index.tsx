@@ -5,6 +5,7 @@ import { Wand2, Sparkles, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import ImageUpload from "@/components/ImageUpload";
+import AgeSelector from "@/components/AgeSelector";
 import StyleSelector, { type PromptStyle } from "@/components/StyleSelector";
 import PromptOutput from "@/components/PromptOutput";
 import PromptHistory from "@/components/PromptHistory";
@@ -14,6 +15,7 @@ const Index = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [style, setStyle] = useState<PromptStyle>("realistic");
+  const [age, setAge] = useState(25);
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
@@ -45,7 +47,7 @@ const Index = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke("generate-prompt", {
-        body: { imageBase64: imagePreview, style, mode },
+        body: { imageBase64: imagePreview, style, mode, age },
       });
 
       if (error) throw error;
@@ -115,6 +117,13 @@ const Index = () => {
                 Imagem de Referência
               </label>
               <ImageUpload onImageSelect={handleImageSelect} preview={imagePreview} onClear={handleClear} />
+            </section>
+
+            <section className="space-y-3">
+              <label className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                Idade da Pessoa
+              </label>
+              <AgeSelector age={age} onChange={setAge} />
             </section>
 
             <section className="space-y-3">
