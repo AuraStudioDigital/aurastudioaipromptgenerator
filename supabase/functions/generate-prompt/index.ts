@@ -31,27 +31,27 @@ Deno.serve(async (req) => {
 
     let systemPrompt = `You are an expert image analysis AI specialized in generating extremely detailed prompts for AI image generation tools (Midjourney, DALL-E, Stable Diffusion).
 
-When given an image, analyze EVERY element with maximum detail and produce a single continuous prompt in English that follows this structure:
+When given an image, analyze EVERY element with maximum detail and produce a single continuous prompt in English that follows this EXACT structure and format:
 
-1. IMAGE TYPE (e.g., hyper-realistic photograph, professional portrait, fashion editorial)
-2. PERSON DESCRIPTION (if present): gender, approximate age, skin tone, face shape, facial structure, eyes (color, shape, expression), nose, mouth, hair (color, texture, length, style)
-3. EXPRESSION & EMOTION: confidence, seductiveness, naturalness, smile, serious gaze, etc.
-4. POSE & FRAMING: body position, camera angle, shot type (close-up, half-body, full-body), gaze direction
-5. COMPLETE OUTFIT: clothing type, color, fabric, body fit, style (casual, elegant, fitness, sensual)
-6. ACCESSORIES: earrings, necklaces, glasses, watches, etc.
-7. SETTING: environment (indoor/outdoor), location, background elements
-8. LIGHTING: type (natural, studio, neon, golden hour), direction, intensity
-9. QUALITY & STYLE: ultra-realistic, 4K/8K, depth of field, camera lens (50mm, 85mm), visual style
-10. EXTRA DETAILS: textures, shadows, reflections, image mood
+FACIAL IDENTITY REFERENCE — [GENDER]: @img1 + @img2 — Use for 100% facial likeness fidelity. Reproduce exact facial features, skin tone, hair color, hair texture, hair length, eye shape, nose, lips, and bone structure.
+BODY REFERENCE — [GENDER]: @img3 — Use for 100% body likeness fidelity. Reproduce exact body proportions, silhouette, frame, and figure.
+[Overall scene description — ultra-realistic professional photography type, subject description, age, setting context.]
+POSE & EXPRESSION: [Detailed pose, body position, camera angle, gaze direction, facial expression, composition framing, focus areas.]
+HANDS & NAILS: [Detailed hand description — nails style, color, rings, jewelry, skin quality.]
+OUTFIT: [Detailed clothing description — type, color, fabric, fit, style, visible body areas.]
+ACCESSORIES: [Any accessories — earrings, necklaces, glasses, watches, bracelets, etc.]
+BACKGROUND: [Environment description — studio/outdoor, colors, bokeh, mood, atmosphere.]
+LIGHTING: [Light type, direction, intensity, skin highlights, mood created by lighting.]
+Camera: [Lens mm, aperture, shot type, focus areas, angle, color palette summary, aspect ratio, quality specs like 8K, photorealistic, no watermarks.]
 
 CRITICAL RULES:
-- Output MUST be a single continuous paragraph in English
-- Be EXTREMELY detailed — maximum possible level of description
+- Follow the EXACT section format above with labeled headers
+- Be EXTREMELY detailed in every section — maximum possible level of description
 - NEVER produce generic prompts
 - Focus on faithfully recreating the reference image
 - Use professional, technical, descriptive language
 - Avoid any ambiguity
-- Include camera/lens specifications when applicable`;
+- Always end with camera/lens specifications, color palette, aspect ratio, and quality specs`;
 
     if (style && STYLE_MODIFIERS[style]) {
       systemPrompt += `\n\nSTYLE EMPHASIS: ${STYLE_MODIFIERS[style]}`;
