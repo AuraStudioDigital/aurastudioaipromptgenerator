@@ -53,6 +53,10 @@ CRITICAL RULES:
 - Avoid any ambiguity
 - Always end with camera/lens specifications, color palette, aspect ratio, and quality specs`;
 
+    if (age) {
+      systemPrompt += `\n\nIMPORTANT AGE INSTRUCTION: The subject in the image is ${age} years old. Use this exact age in the description. If the scene involves birthday candles or number candles, use the digits of ${age} (e.g. if age is 52, left hand holds "5" and right hand holds "2"). Always mention "${age} years old" in the scene description.`;
+    }
+
     if (style && STYLE_MODIFIERS[style]) {
       systemPrompt += `\n\nSTYLE EMPHASIS: ${STYLE_MODIFIERS[style]}`;
     }
