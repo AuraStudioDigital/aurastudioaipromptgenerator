@@ -56,7 +56,19 @@ CRITICAL RULES:
 - Always end with camera/lens specifications, color palette, aspect ratio, and quality specs`;
 
     if (age) {
-      systemPrompt += `\n\nIMPORTANT AGE INSTRUCTION: The subject in the image is ${age} years old. Use this exact age in the description. If the scene involves birthday candles or number candles, use the digits of ${age} (e.g. if age is 52, left hand holds "5" and right hand holds "2"). Always mention "${age} years old" in the scene description.`;
+      const digits = String(age).split("");
+      const digitDesc = digits.length === 2
+        ? `left hand holds a "${digits[0]}" candle and right hand holds a "${digits[1]}" candle`
+        : digits.length === 1
+        ? `holding a single "${digits[0]}" candle`
+        : `holding candles showing "${age}"`;
+      systemPrompt += `\n\nCRITICAL AGE INSTRUCTION — MANDATORY:
+- The subject is EXACTLY ${age} years old. Replace ANY age mentioned with ${age}.
+- ALL number candles, balloon numbers, cake numbers, or ANY numeric element in the scene MUST be changed to show ${age}.
+- For candles: ${digitDesc}. IGNORE the original numbers on candles/balloons in the photo.
+- For balloons: replace any number balloons with balloons showing "${age}" or individual digit balloons "${digits.join('" and "')}".
+- Always write "${age} years old" in the scene description.
+- This overrides EVERYTHING you see in the image regarding age and numbers.`;
     }
 
     if (style && STYLE_MODIFIERS[style]) {
