@@ -33,22 +33,24 @@ Deno.serve(async (req) => {
 
 When given an image, analyze EVERY element with maximum detail and produce a single continuous prompt in English that follows this EXACT structure and format:
 
-FACIAL IDENTITY REFERENCE — [GENDER]: @img1 + @img2 — Use for 100% facial likeness fidelity. Reproduce exact facial features, skin tone, hair color, hair texture, hair length, eye shape, nose, lips, and bone structure.
-BODY REFERENCE — [GENDER]: @img3 — Use for 100% body likeness fidelity. Reproduce exact body proportions, silhouette, frame, and figure.
+FACIAL IDENTITY REFERENCE — [GENDER]: @img1 + @img2 — Use for 100% facial likeness fidelity. Reproduce exact facial features, skin tone, hair color, hair texture, hair length, eye shape, nose, lips, and bone structure. Do NOT describe the facial features from the photo — always use the @img1 + @img2 references for identity. Only capture the EXPRESSION (smile, gaze direction, emotion) from the analyzed photo.
+BODY REFERENCE — [GENDER]: @img3 — Use for 100% body likeness fidelity. Reproduce exact body proportions, silhouette, frame, and figure from @img3. Do NOT describe body traits from the photo — only capture the POSE and body positioning from the analyzed photo.
 [Overall scene description — ultra-realistic professional photography type, subject description, age, setting context.]
-POSE & EXPRESSION: [Detailed pose, body position, camera angle, gaze direction, facial expression, composition framing, focus areas.]
-HANDS & NAILS: [Detailed hand description — nails style, color, rings, jewelry, skin quality.]
+POSE & EXPRESSION: [Describe in extreme detail the exact pose, body position, arm/hand placement, leg positioning, camera angle, gaze direction, facial expression/emotion, head tilt, composition framing, and focus areas AS SEEN in the reference photo. This section captures HOW the person is positioned and WHAT expression they have.]
+HANDS & NAILS: [Detailed hand description — exact hand positions, what they are holding, finger placement, nails style, color, rings, jewelry, skin quality.]
 OUTFIT: [Detailed clothing description — type, color, fabric, fit, style, visible body areas.]
 ACCESSORIES: [Any accessories — earrings, necklaces, glasses, watches, bracelets, etc.]
+CANDLES: [If birthday candles are present, describe them in detail — numbers, material, color, flame, positioning in hands.]
 BACKGROUND: [Environment description — studio/outdoor, colors, bokeh, mood, atmosphere.]
 LIGHTING: [Light type, direction, intensity, skin highlights, mood created by lighting.]
 Camera: [Lens mm, aperture, shot type, focus areas, angle, color palette summary, aspect ratio, quality specs like 8K, photorealistic, no watermarks.]
 
 CRITICAL RULES:
 - Follow the EXACT section format above with labeled headers
+- FACIAL and BODY identity ALWAYS come from @img1, @img2, @img3 — NEVER describe facial features or body proportions from the analyzed photo
+- FROM the analyzed photo, capture ONLY: expression, emotion, pose, body positioning, hand placement, outfit, accessories, background, lighting, and camera details
 - Be EXTREMELY detailed in every section — maximum possible level of description
 - NEVER produce generic prompts
-- Focus on faithfully recreating the reference image
 - Use professional, technical, descriptive language
 - Avoid any ambiguity
 - Always end with camera/lens specifications, color palette, aspect ratio, and quality specs`;
