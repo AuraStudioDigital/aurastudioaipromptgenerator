@@ -7,7 +7,7 @@ const Header = () => (
         <Sparkles className="w-6 h-6 text-primary" />
       </div>
       <h1 className="text-3xl sm:text-4xl font-bold">
-        <span className="gradient-text">PromptVision</span>
+        <span className="gradient-text">Aura Studio AI Prompt Generator</span>
       </h1>
     </div>
     <p className="text-muted-foreground max-w-xl mx-auto text-base sm:text-lg">
