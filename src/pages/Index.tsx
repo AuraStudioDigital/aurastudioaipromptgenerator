@@ -11,6 +11,8 @@ import PromptOutput from "@/components/PromptOutput";
 import PromptHistory from "@/components/PromptHistory";
 import { usePromptHistory } from "@/hooks/usePromptHistory";
 
+const GENERATE_PROMPT_TIMEOUT_MS = 45000;
+
 const Index = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -22,6 +24,18 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<"generate" | "history">("generate");
 
   const { items: historyItems, addItem, deleteItem, clearAll } = usePromptHistory();
+
+  const invokeGeneratePrompt = () =>
+    Promise.race([
+      supabase.functions.invoke("generate-prompt", {
+        body: { imageBase64: imagePreview, style, mode: "generate", age },
+      }),
+      new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error("A geração demorou demais. Tente novamente com uma imagem menor."));
+        }, GENERATE_PROMPT_TIMEOUT_MS);
+      }),
+    ]);
 
   const handleImageSelect = (file: File, preview: string) => {
     setImageFile(file);
@@ -46,14 +60,27 @@ const Index = () => {
     setIsRefining(isRefine);
 
     try {
-      const { data, error } = await supabase.functions.invoke("generate-prompt", {
-        body: { imageBase64: imagePreview, style, mode, age },
-      });
+      setPrompt("");
+
+      const { data, error } = await Promise.race([
+        supabase.functions.invoke("generate-prompt", {
+          body: { imageBase64: imagePreview, style, mode, age },
+        }),
+        new Promise<never>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error("A geração demorou demais. Tente novamente com uma imagem menor."));
+          }, GENERATE_PROMPT_TIMEOUT_MS);
+        }),
+      ]);
 
       if (error) throw error;
       if (data?.error) {
         toast.error(data.error);
         return;
+      }
+
+      if (!data?.prompt) {
+        throw new Error("Nenhum prompt foi retornado.");
       }
 
       setPrompt(data.prompt);
@@ -69,7 +96,7 @@ const Index = () => {
       );
     } catch (err: any) {
       console.error(err);
-      toast.error("Erro ao gerar prompt. Tente novamente.");
+      toast.error(err?.message || "Erro ao gerar prompt. Tente novamente.");
     } finally {
       setIsLoading(false);
       setIsRefining(false);
