@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<AuthContextType["profile"]>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const initialized = useRef(false);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -42,6 +43,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    // Safety timeout — never stay loading forever
+    const timeout = setTimeout(() => {
+      if (!initialized.current) {
+        console.warn("Auth timeout — forcing isLoading=false");
+        initialized.current = true;
+        setIsLoading(false);
+      }
+    }, 5000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const u = session?.user ?? null;
       setUser(u);
@@ -51,7 +61,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setProfile(null);
         setIsAdmin(false);
       }
-      setIsLoading(false);
+      if (!initialized.current) {
+        initialized.current = true;
+        setIsLoading(false);
+      }
     });
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -60,10 +73,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (u) {
         await fetchProfile(u.id);
       }
-      setIsLoading(false);
+      if (!initialized.current) {
+        initialized.current = true;
+        setIsLoading(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
