@@ -11,12 +11,15 @@ const ImageUpload = ({ onImageSelect, preview, onClear }: ImageUploadProps) => {
   const [isDragging, setIsDragging] = useState(false);
 
   const compressImage = useCallback((file: File): Promise<string> => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        const MAX_SIZE = 1024;
+        const MAX_SIZE = 768;
         let { width, height } = img;
+
         if (width > MAX_SIZE || height > MAX_SIZE) {
           if (width > height) {
             height = Math.round((height * MAX_SIZE) / width);
@@ -28,18 +31,37 @@ const ImageUpload = ({ onImageSelect, preview, onClear }: ImageUploadProps) => {
         }
         canvas.width = width;
         canvas.height = height;
-        const ctx = canvas.getContext("2d")!;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error("Não foi possível processar a imagem."));
+          return;
+        }
+
         ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", 0.8));
+        URL.revokeObjectURL(objectUrl);
+        resolve(canvas.toDataURL("image/jpeg", 0.72));
       };
-      img.src = URL.createObjectURL(file);
+
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("Não foi possível ler a imagem enviada."));
+      };
+
+      img.src = objectUrl;
     });
   }, []);
 
   const handleFile = useCallback(async (file: File) => {
     if (!file.type.startsWith("image/")) return;
-    const compressed = await compressImage(file);
-    onImageSelect(file, compressed);
+
+    try {
+      const compressed = await compressImage(file);
+      onImageSelect(file, compressed);
+    } catch (error) {
+      console.error(error);
+    }
   }, [onImageSelect, compressImage]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {

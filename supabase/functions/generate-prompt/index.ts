@@ -14,6 +14,8 @@ const STYLE_MODIFIERS: Record<string, string> = {
     "Focus on Instagram/social media aesthetics: warm tones, golden hour feel, trendy editing style, lifestyle mood, clean backgrounds, influencer-level polish.",
 };
 
+const AI_TIMEOUT_MS = 40000;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -99,6 +101,7 @@ CRITICAL RULES:
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
+      signal: AbortSignal.timeout(AI_TIMEOUT_MS),
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
@@ -142,10 +145,24 @@ CRITICAL RULES:
     const data = await response.json();
     const prompt = data.choices?.[0]?.message?.content || "";
 
+    if (!prompt.trim()) {
+      return new Response(JSON.stringify({ error: "Empty prompt returned by AI gateway" }), {
+        status: 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({ prompt }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
+    if (e instanceof Error && (e.name === "TimeoutError" || e.name === "AbortError")) {
+      return new Response(JSON.stringify({ error: "Prompt generation timed out. Please try again with a smaller image." }), {
+        status: 504,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     console.error("Error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
       status: 500,
