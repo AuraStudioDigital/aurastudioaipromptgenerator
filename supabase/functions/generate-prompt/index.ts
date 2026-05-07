@@ -59,8 +59,10 @@ LIGHTING: [Light type, direction, intensity, skin highlights, mood created by li
 Camera: [Lens mm, aperture, shot type, focus areas, angle, color palette summary, aspect ratio, quality specs like 8K, photorealistic, no watermarks.]
 
 CRITICAL RULES:
+- FIRST detect the number of people. If 2+, output one identity block PER person with sequential @img tags (Person 1: @img1+@img2 face, @img3 body; Person 2: @img4+@img5 face, @img6 body; +3 per person).
+- For multi-person scenes, label POSE & EXPRESSION, HANDS & NAILS, OUTFIT and ACCESSORIES per person ("Person 1: ...", "Person 2: ...") and describe their interaction/relative positioning in the scene description.
 - Follow the EXACT section format above with labeled headers
-- FACIAL and BODY identity ALWAYS come from @img1, @img2, @img3 — NEVER describe facial features or body proportions from the analyzed photo
+- FACIAL and BODY identity ALWAYS come from the @img references — NEVER describe facial features or body proportions from the analyzed photo
 - FROM the analyzed photo, capture ONLY: expression, emotion, pose, body positioning, hand placement, outfit, accessories, background, lighting, and camera details
 - Be EXTREMELY detailed in every section — maximum possible level of description
 - NEVER produce generic prompts
